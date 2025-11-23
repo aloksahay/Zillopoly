@@ -1,7 +1,6 @@
 import { cre, Runner, type Runtime } from "@chainlink/cre-sdk";
 import { decodeEventLog, encodeFunctionData, type Hex, keccak256, toHex } from "viem";
 
-// Zillopoly contract ABI
 const ZILLOPOLY_ABI = [
   {
     type: "event",
@@ -29,7 +28,7 @@ const ZILLOPOLY_ABI = [
 type Config = {
   zillopolyAddress: string;
   chainName: string;
-  apiUrl: string; // URL to the Zillopoly API
+  apiUrl: string; 
 };
 
 type BatchGamesCreatedEvent = {
@@ -58,7 +57,6 @@ type ListingResponse = {
   };
 };
 
-// Handler for BatchGamesCreated events
 const onBatchGamesCreated = async (
   runtime: Runtime<Config>,
   payload: cre.capabilities.EVMLogPayload
@@ -66,7 +64,6 @@ const onBatchGamesCreated = async (
   runtime.log("=== Batch Games Created Event Detected ===");
 
   try {
-    // Decode the event log
     const decodedLog = decodeEventLog({
       abi: ZILLOPOLY_ABI,
       data: payload.data as Hex,
@@ -85,19 +82,16 @@ const onBatchGamesCreated = async (
     const numGames = Number(eventData.endGameId - eventData.startGameId + 1n);
     runtime.log(`Fetching ${numGames} listings from API...`);
 
-    // Initialize HTTP and EVM capabilities
     const http = new cre.capabilities.HTTPCapability();
     const evm = new cre.capabilities.EVMCapability();
 
     const results = [];
 
-    // Fetch listings and initialize games
     for (let i = 0; i < numGames; i++) {
       const currentGameId = eventData.startGameId + BigInt(i);
 
       runtime.log(`Fetching listing ${i + 1}/${numGames} for game ID ${currentGameId}...`);
 
-      // Fetch random listing from API
       const response = await http.fetch({
         url: `${runtime.config.apiUrl}/api/random-listing`,
         method: "GET",
@@ -120,7 +114,6 @@ const onBatchGamesCreated = async (
 
       runtime.log(`Got listing from ${listingData.city}: $${listingData.contractData.displayedPrice}`);
 
-      // Encode the initializeGame function call
       const calldata = encodeFunctionData({
         abi: ZILLOPOLY_ABI,
         functionName: "initializeGame",
@@ -133,7 +126,6 @@ const onBatchGamesCreated = async (
 
       runtime.log(`Initializing game ${currentGameId} with listing ${listingData.listing.zpid}...`);
 
-      // Send transaction to initialize the game
       const txResponse = await evm.write({
         chainName: runtime.config.chainName,
         to: runtime.config.zillopolyAddress,
@@ -173,7 +165,6 @@ const initWorkflow = (config: Config) => {
   const evm = new cre.capabilities.EVMCapability();
 
   return [
-    // EVM Log Trigger for BatchGamesCreated events
     cre.handler(
       evm.logTrigger({
         chainName: config.chainName,
