@@ -17,7 +17,8 @@ export default {
   etherscan: {
     apiKey: {
       celo: process.env.CELOSCAN_API_KEY || "api-key",
-      celoAlfajores: process.env.CELOSCAN_API_KEY || "api-key"
+      celoAlfajores: process.env.CELOSCAN_API_KEY || "api-key",
+      citrea: process.env.CITREA_API_KEY || "api-key"
     },
     customChains: [
       {
@@ -34,6 +35,14 @@ export default {
         urls: {
           apiURL: "https://api-alfajores.celoscan.io/api",
           browserURL: "https://alfajores.celoscan.io"
+        }
+      },
+      {
+        network: "citrea",
+        chainId: 5115,
+        urls: {
+          apiURL: "https://explorer.testnet.citrea.xyz/api",
+          browserURL: "https://explorer.testnet.citrea.xyz"
         }
       }
     ]
@@ -55,6 +64,12 @@ export default {
       url: "https://alfajores-forno.celo-testnet.org",
       chainId: 44787,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+    },
+    citrea: {
+      url: "https://rpc.testnet.citrea.xyz",
+      chainId: 5115,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      // gasPrice will be auto-detected from network
     }
   }
 };
