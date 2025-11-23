@@ -24,11 +24,3 @@ staging-settings:
     secrets-path: ""
     
 
-# ==========================================================================
-production-settings:
-  user-workflow:
-    workflow-name: "listingManager-production"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.production.json"
-    secrets-path: ""

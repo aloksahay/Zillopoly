@@ -41,31 +41,27 @@ const MAJOR_CITIES = [
 ];
 
 /**
- * Generates a random percentage between -15% and +15%
+ * Generates a random multiplier between 85 and 115 (representing 85% to 115% of actual price)
  * Uses Math.js API for random number generation
- * @returns {Promise<number>} Random percentage adjustment (-15 to +15)
+ * @returns {Promise<number>} Random multiplier (85 to 115)
  */
-async function getRandomPercentageAdjustment() {
+async function getRandomPriceMultiplier() {
   try {
-    // Get random number between 1 and 100 (representing 0.01 to 1.00)
-    const response = await fetch('https://api.mathjs.org/v4/?expr=randomInt(1,101)');
+    // Get random number between 85 and 115 (for ±15% adjustment)
+    const response = await fetch('https://api.mathjs.org/v4/?expr=randomInt(85,116)');
 
     if (!response.ok) {
       throw new Error('Math.js API failed');
     }
 
     const randomValue = await response.text();
-    const normalized = parseInt(randomValue.trim()) / 100; // 0.01 to 1.00
+    const multiplier = parseInt(randomValue.trim());
 
-    // Map to -15% to +15% range
-    // normalized is 0.01 to 1.00, we want -0.15 to 0.15
-    const adjustment = (normalized * 0.30) - 0.15; // Scale to 0.30 range, then shift down by 0.15
-
-    return adjustment;
+    return multiplier;
   } catch (error) {
-    console.error('Error getting random adjustment from Math.js API:', error);
+    console.error('Error getting random multiplier from Math.js API:', error);
     // Fallback to Math.random if API fails
-    return (Math.random() * 0.30) - 0.15;
+    return Math.floor(Math.random() * 31) + 85; // 85 to 115
   }
 }
 
@@ -109,12 +105,17 @@ async function fetchRandomListing() {
       // Get actual price
       const actualPrice = randomListing.price || 0;
 
-      // Generate displayed price with ±15% adjustment
-      const adjustment = await getRandomPercentageAdjustment();
-      const displayedPrice = Math.round(actualPrice * (1 + adjustment));
+      // Generate displayed price with ±15% adjustment (multiplier is 85-115)
+      // Ensure displayed price is never exactly the same as actual price
+      let multiplier = await getRandomPriceMultiplier();
+      while (multiplier === 100) {
+        multiplier = await getRandomPriceMultiplier();
+      }
+      const displayedPrice = Math.round(actualPrice * (multiplier / 100));
+      const adjustmentPercent = multiplier - 100;
 
       console.log(`Actual Price: $${actualPrice.toLocaleString()}`);
-      console.log(`Adjustment: ${(adjustment * 100).toFixed(2)}%`);
+      console.log(`Multiplier: ${multiplier}% (${adjustmentPercent > 0 ? '+' : ''}${adjustmentPercent}%)`);
       console.log(`Displayed Price: $${displayedPrice.toLocaleString()}`);
 
       // Format the listing data for our contract
@@ -142,7 +143,8 @@ async function fetchRandomListing() {
         priceInfo: {
           actual: actualPrice,
           displayed: displayedPrice,
-          adjustmentPercent: (adjustment * 100).toFixed(2)
+          multiplier: multiplier,
+          adjustmentPercent: adjustmentPercent
         }
       };
     } else {
