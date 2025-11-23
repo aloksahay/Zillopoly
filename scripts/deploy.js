@@ -10,7 +10,9 @@ async function main() {
 
   // Check deployer balance
   const balance = await hre.ethers.provider.getBalance(deployer.address);
-  console.log("Account balance:", hre.ethers.formatEther(balance), "CELO");
+  const network = await hre.ethers.provider.getNetwork();
+  const currencySymbol = network.chainId === 5115n ? "cBTC" : "CELO";
+  console.log("Account balance:", hre.ethers.formatEther(balance), currencySymbol);
 
   // Deploy HOBO token - Max supply: 100M, Initial mint: 1M to deployer
   const initialSupply = hre.ethers.parseEther("1000000"); // 1 million tokens
@@ -32,19 +34,8 @@ async function main() {
   const zillopolyAddress = await zillopoly.getAddress();
   console.log("Zillopoly deployed to:", zillopolyAddress);
 
-  // Fund the house with HOBO tokens (10% of initial supply)
-  const houseFunding = hre.ethers.parseEther("100000"); // 100k HOBO for the house
-  console.log("\nFunding house with", hre.ethers.formatEther(houseFunding), "HOBO (10% of initial supply)...");
-
-  // Approve Zillopoly contract to spend HOBO
-  const approveTx = await hobo.approve(zillopolyAddress, houseFunding);
-  await approveTx.wait();
-  console.log("Approved Zillopoly contract to spend HOBO");
-
-  // Fund the house
-  const fundTx = await zillopoly.fundHouse(houseFunding);
-  await fundTx.wait();
-  console.log("House funded successfully");
+  // Note: Zillopoly contract doesn't have fundHouse function
+  // The contract accumulates funds from losing bets automatically
 
   console.log("\n=== Deployment Summary ===");
   console.log("Network:", hre.network.name);
@@ -53,13 +44,18 @@ async function main() {
   console.log("  Max Supply:", hre.ethers.formatEther(await hobo.MAX_SUPPLY()), "HOBO");
   console.log("  Total Supply:", hre.ethers.formatEther(await hobo.totalSupply()), "HOBO");
   console.log("Zillopoly:", zillopolyAddress);
-  console.log("House Balance:", hre.ethers.formatEther(await zillopoly.houseBalance()), "HOBO");
+  console.log("Contract Balance:", hre.ethers.formatEther(await zillopoly.getContractBalance()), "HOBO");
   console.log("Deployer Balance:", hre.ethers.formatEther(await hobo.balanceOf(deployer.address)), "HOBO");
 
   // Verification info
   if (hre.network.name === "celo" || hre.network.name === "celoAlfajores") {
     console.log("\n=== Verification Commands ===");
     console.log("To verify on Celo Explorer, run:");
+    console.log(`npx hardhat verify --network ${hre.network.name} ${hoboAddress} "${initialSupply}"`);
+    console.log(`npx hardhat verify --network ${hre.network.name} ${zillopolyAddress} "${hoboAddress}"`);
+  } else if (hre.network.name === "citrea") {
+    console.log("\n=== Verification Commands ===");
+    console.log("To verify on Citrea Explorer, run:");
     console.log(`npx hardhat verify --network ${hre.network.name} ${hoboAddress} "${initialSupply}"`);
     console.log(`npx hardhat verify --network ${hre.network.name} ${zillopolyAddress} "${hoboAddress}"`);
   }
