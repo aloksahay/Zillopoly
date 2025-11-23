@@ -1,0 +1,30 @@
+{
+  "name": "zillopoly",
+  "version": "1.0.0",
+  "description": "Built at ETHGlobal Buenos Aires 2025",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js",
+    "deploy:localhost": "hardhat run scripts/deploy.js --network localhost",
+    "node": "hardhat node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aloksahay/Zillopoly.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/aloksahay/Zillopoly/issues"
+  },
+  "homepage": "https://github.com/aloksahay/Zillopoly#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "hardhat": "^2.22.0"
+  }
+}
